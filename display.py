@@ -13,13 +13,6 @@ def readNextLine():
         
     return line
 
-def map_init_reg(x, y):
-    arr = []
-    for j in range(x):
-        for i in range(y):
-            arr.append([j*100, i*100])
-    return np.array(arr, dtype=float)
-
 
 init_draw(550, 550)
 input_vec = []
