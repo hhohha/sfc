@@ -1,7 +1,3 @@
-// som_demo visual -i 10
-// som_demo clusters -c 3 -i 30 -nd
-// som_demo digits -f filename
-
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -20,7 +16,7 @@ vector2d generateInput(int n){
     vector2d v;
     
     for (int i = 0; i < n; i++) {
-        v.push_back(vector<int>{rand() % 600, rand() % 600});
+        v.push_back(vector<int>{rand() % 500, rand() % 500});
     }
     
     return v;
@@ -88,7 +84,10 @@ void readCSV(string filename, vector<vector<int>> &data, vector<int> &reference)
 }
 
 void usage() {
-    cerr << "usage: ..." << endl;
+    cerr << "usage:" << endl;
+    cerr << "som_demo visual -i INPUT_CNT" << endl;
+    cerr << "som_demo clusters -c CLUSTER_CNT -i INPUT_CNT [-nd]" << endl;
+    cerr << "som_demo digits -f FILENAME"  << endl;
     exit(1);
 }
 
@@ -166,24 +165,29 @@ int main (int argc, char **argv) {
      srand((unsigned) time(0));
     
     //add try/catch block for stoi
-    for (int i = 2; i < argc; i++) {
-        string arg(argv[i]);
-        
-        if (arg == "-i" && i < argc - 1) {
-            i++;
-            inputCnt = stoi(argv[i]);
-        } else if (arg == "-c" && i < argc - 1) {
-            i++;
-            clusterCnt = stoi(argv[i]);
-        } else if (arg == "-nd") {
-            displayProgress = false;
-        } else if (arg == "-f" && i < argc - 1) {
-            i++;
-            filename = argv[i];
-        } else {
-            usage();
-        }
+    try {
+        for (int i = 2; i < argc; i++) {
+            string arg(argv[i]);
+            
+            if (arg == "-i" && i < argc - 1) {
+                i++;
+                inputCnt = stoi(argv[i]);
+            } else if (arg == "-c" && i < argc - 1) {
+                i++;
+                clusterCnt = stoi(argv[i]);
+            } else if (arg == "-nd") {
+                displayProgress = false;
+            } else if (arg == "-f" && i < argc - 1) {
+                i++;
+                filename = argv[i];
+            } else {
+                usage();
+            }
+        } 
+    } catch (invalid_argument e) {
+        usage();
     }
+        
     
     if (string(argv[1]) == "visual") {
         if (inputCnt < 1)

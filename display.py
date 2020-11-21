@@ -57,7 +57,7 @@ def readNextLine():
         
     return line
 
-init_draw(gridSize * 100, gridSize * 100)
+init_draw(gridSize * 100 - 50, gridSize * 100 - 50)
 input_vec = []
 
 while True:
