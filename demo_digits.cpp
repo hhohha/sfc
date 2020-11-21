@@ -10,12 +10,18 @@ using namespace std;
 
 void readCSV(string filename, vector<vector<int>> &data, vector<int> &reference) {
     ifstream fin(filename);
+    
+    if (!fin){
+        cerr << "wrong file specified" << endl;
+        exit(1);
+    }
+    
     string line;
     
     getline(fin, line);
     
     while(getline(fin, line)) {
-        vector<int> tmpv;
+        vector<int> tmpv; 
         int n = 0;
         int ref = -1;
         
@@ -42,25 +48,27 @@ void readCSV(string filename, vector<vector<int>> &data, vector<int> &reference)
     cout << "\nREADING INPUT DONE\n";
 }
 
-
-
-
-int main(){
+int main(int argc, char **argv){
     
+    if (argc != 2) {
+        cerr << "wrong arguments" << endl;
+        return 1;
+    }
+
     srand((unsigned) time(0));
     
     vector<int> reference;
     vector<vector<int>> data;
     
-    readCSV("train.csv", data, reference);
+    readCSV(argv[1], data, reference);
     
     cSom mySom = cSom(15, 15, 784);
     cout << "cSom created" << endl;
     mySom.initRandom(256);
     cout << "cSom initialized" << endl;
     
-    mySom.learn(data, reference, 0, 0, 41001);
-    mySom.classify(data, reference, 41001, 42000);
+    mySom.learn(data, reference, 0, data.size() - 1000);
+    mySom.classify(data, reference, data.size() - 1000, data.size());
     
     for (unsigned i = 0; i < mySom.sx; i++) { 
         for (unsigned j = 0; j < mySom.sy; j++) { 

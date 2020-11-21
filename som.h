@@ -24,12 +24,11 @@ public:
     double const nbrCoeff = 0.75;
     
     cSom(unsigned sx, unsigned sy, unsigned dimension);
-    void debugPrint();
     void initGrid(int mult = 100);
     void initRandom(unsigned maxn);
     vector<int> getNeighbors(unsigned n);
-    void learn(vector<vector<int>> input, vector<int> ref, int sleepTime = 0, int startIdx = 0, int endIdx = -1);
-    void demo_learn(vector<vector<int>> input, int sleepTime = 0, int startIdx = 0, int endIdx = -1);
+    void adjustWeights(int idx, vector<int> input);
+    void learn(vector<vector<int>> input, vector<int> ref, int startIdx = 0, int endIdx = -1);
     void classify(vector<vector<int>> input, vector<int> ref, int startIdx = 0, int endIdx = -1);
     void print(vector<int> input);
     int getBmu(vector<int> vec);

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <unistd.h>
 #include "som.h"
 
 typedef vector<vector<int>> vector2d;
@@ -20,47 +21,30 @@ vector2d generateInput(int n){
 }
 
 int main(int argc, char **argv){
-    
-    if (argc < 5){
-        cout << "wrong argumetns provided" << endl;
+
+    if (argc < 2) {
+        cerr << "wrong arguments" << endl;
         return 1;
     }
     
-    int size = -1;
-    int inputCnt = -1;
-    
-    if (string(argv[1]) == "-s")
-        size = atoi(argv[2]);
-    else if (string(argv[1]) == "-i")
-        inputCnt = atoi(argv[2]);
-    
-    if (string(argv[3]) == "-s")
-        size = atoi(argv[4]);
-    else if (string(argv[3]) == "-i")
-        inputCnt = atoi(argv[4]);
-    
-    if (size == -1 || inputCnt == -1) {
-        cout << "wrong argumetns provided" << endl;
-        return 1;
-    }
-    
-    if (size < 2 || size > 12) {
-        cout << "invalid size" << endl;
-        return 1;
-    }
-    
-    if (inputCnt < 1) {
-        cout << "invalid input count" << endl;
-        return 1;
-    }
-    
+    int size = 6;
+    int inputCnt = atoi(argv[1]);
     
     srand((unsigned) time(0));
     vector2d testInput = generateInput(inputCnt);
     
     cSom mySom = cSom(size, size, 2);
     mySom.initGrid();
-    mySom.demo_learn(testInput, 1000000);
+    
+    mySom.print({-1, -1});
+    for (unsigned i = 0; i < testInput.size(); i++) {
+        int bmu = mySom.getBmu(testInput[i]);
+         mySom.adjustWeights(bmu, testInput[i]);
+         mySom.print(testInput[i]);
+         usleep(1000000);
+         
+    }
+    cout << "0x0";
     
     
     cerr << "BYE" << endl;

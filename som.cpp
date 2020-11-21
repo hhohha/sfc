@@ -2,7 +2,6 @@
 
 /*
  TODO
-  - prepare demo scripts
   - tidy up the code, comments
   - write report
  */
@@ -63,16 +62,7 @@ void cNeuron::hit(int i) {
     hits[i]++;
 }
 
-ostream &operator<<(ostream &output, const cNeuron& n) {
-    unsigned i = 0;
-    for (i = 0; i < n.w.size() - 1; i++) 
-        output << n.w[i] << '-';
-    if (n.w.size() > 0)
-        output << n.w[i];
-    return output;
-}
 
-    
 cSom::cSom(unsigned sx, unsigned sy, unsigned dimension) {
     this->sx = sx;
     this->sy = sy;
@@ -81,15 +71,6 @@ cSom::cSom(unsigned sx, unsigned sy, unsigned dimension) {
     for (unsigned i = 0; i < sx * sy; i++){
         som.push_back(cNeuron(dimension));
     } 
-}
-
-void cSom::debugPrint() {
-    for (unsigned i = 0; i < sx; i++) {
-        for (unsigned j = 0; j < sy; j++) {
-            cout << som[sx * i + j] << "   ";
-        }
-        cout << endl;
-    }
 }
 
 void cSom::initGrid(int mult) {
@@ -120,10 +101,17 @@ vector<int> cSom::getNeighbors(unsigned n) {
     return retVec;
 }
 
-void cSom::learn(vector<vector<int>> input, vector<int> ref, int sleepTime, int startIdx, int endIdx) {
+void cSom::adjustWeights(int idx, vector<int> v) {
+    som[idx].addVec(v, learnCoeff);
+    for(int i: getNeighbors(idx)) {
+        som[i].addVec(v, learnCoeff * nbrCoeff);
+    }
+}
+
+void cSom::learn(vector<vector<int>> data, vector<int> ref, int startIdx, int endIdx) {
     cout << "learning started" << endl;
     int cntr = 0;
-    endIdx = endIdx > 0 ? endIdx : input.size();
+    endIdx = endIdx > 0 ? endIdx : data.size();
         
     for (int i = startIdx; i < endIdx; i++) {
         if (cntr == 1000) {
@@ -131,46 +119,23 @@ void cSom::learn(vector<vector<int>> input, vector<int> ref, int sleepTime, int 
             cntr = 0;
         }
         cntr++;
-        usleep(sleepTime);
         
-        int bmu = getBmu(input[i]);
+        int bmu = getBmu(data[i]);
         
-        som[bmu].addVec(input[i], learnCoeff);
         som[bmu].hit(ref[i]);
-        for(int j: getNeighbors(bmu)) {
-            som[j].addVec(input[i], learnCoeff * nbrCoeff);
-        }
+        adjustWeights(bmu, data[i]);
     }
     cout << "learning finished" << endl;
 }
 
-void cSom::demo_learn(vector<vector<int>> input, int sleepTime, int startIdx, int endIdx) {
-    endIdx = endIdx > 0 ? endIdx : input.size();
-    print({-1, -1});
-    
-    for (int i = startIdx; i < endIdx; i++) {
-        usleep(sleepTime);
-        
-        int bmu = getBmu(input[i]);
-        
-        som[bmu].addVec(input[i], learnCoeff);
-        for(int j: getNeighbors(bmu)) {
-            som[j].addVec(input[i], learnCoeff * nbrCoeff);
-        }
-        
-        print(input[i]);
-    }
-    cout << "0x0";
-}
-
-void cSom::classify(vector<vector<int>> input, vector<int> ref, int startIdx, int endIdx) {
+void cSom::classify(vector<vector<int>> data, vector<int> ref, int startIdx, int endIdx) {
     cout << "classification started" << endl;
     int correct = 0, wrong = 0;
     
-    endIdx = endIdx > 0 ? endIdx : input.size();
+    endIdx = endIdx > 0 ? endIdx : data.size();
     
     for (int i = startIdx; i < endIdx; i++) {
-        int bmu = getBmu(input[i]);
+        int bmu = getBmu(data[i]);
         if (som[bmu].topHit() == ref[i]) {
             correct++;
         } else {
@@ -183,9 +148,9 @@ void cSom::classify(vector<vector<int>> input, vector<int> ref, int startIdx, in
     cout << "wrongly classified: " << wrong << " items out of " << correct + wrong << endl;
 }
     
-void cSom::print(vector<int> input) {
+void cSom::print(vector<int> data) {
     cout << sx << "x" << sy << endl;
-    cout << input[0] << " " << input[1] << endl;
+    cout << data[0] << " " << data[1] << endl;
     for (unsigned i = 0; i < som.size(); i++) {
         for (auto n: som[i].w) {
             cout << n << " ";
