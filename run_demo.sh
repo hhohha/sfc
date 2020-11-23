@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# module: run_demo.sh - launcher of som_demo.sh 
+# author: Jan Hammer, xhamme00
+
 if [ $# != 1 ]; then
     echo "usage: ./run_demo 1|2|3|4"
 elif [ $1 = "1" ]; then
@@ -7,7 +10,7 @@ elif [ $1 = "1" ]; then
         echo "files display.py and graphics.py must be present for this demo to work"
         exit
     }
-    make && ./som_demo visual -i 10 -s 6 | ./display.py
+    make && ./som_demo visual -i 10 -s 6 -sp 2 | ./display.py
 elif [ $1 = "2" ]; then
     stat display.py graphics.py > /dev/null || {
         echo "files display.py and graphics.py must be present for this demo to work"

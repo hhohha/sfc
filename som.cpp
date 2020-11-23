@@ -1,17 +1,10 @@
-#include "som.h"
-
-/*
- TODO
-  - vykreslovani
-  - tidy up the code, comments
-  - write report
-  - play with learning coeffs for digots
- */
-
+// module: som.h - file for self organizing map library class
+// author: Jan Hammer, xhamme00
 
 #include <iostream>
 #include <cmath>
 #include <unistd.h>
+#include "som.h"
 
 using namespace std;
     
@@ -30,6 +23,8 @@ int cNeuron::diffVec(vector<int> v) {
         throw "cNeuron > diffVec: wrong vector dimension";
     
     int sum = 0;
+    
+    // difference between neuron and vector is done item by item then squared and summed together
     for (unsigned i = 0; i < v.size(); i++) {
         sum += pow(v[i] - w[i], 2);
     }
@@ -41,6 +36,7 @@ void cNeuron::addVec(vector<int> v, double coeff) {
     if (v.size() != w.size())
         throw "cNeuron > addVec: wrong vector dimension";
     
+    // adjust vector - item by item the difference is multiplied by a learning coefficient, then added
     for (unsigned i = 0; i < v.size(); i++) {
         w[i] += round((v[i] - w[i]) * coeff);
     }
@@ -49,6 +45,8 @@ void cNeuron::addVec(vector<int> v, double coeff) {
 int cNeuron::topHit() {
     int maxIdx = -1;
     int maxHits = 0;
+    
+    // get the maximum index from hits vector - that is the winning digit
     for (unsigned i = 0; i < hits.size(); i++) {
         if (hits[i] > maxHits) {
             maxHits = hits[i];
@@ -75,7 +73,7 @@ cSom::cSom(unsigned sx, unsigned sy, unsigned dimension) {
 }
 
 void cSom::initGrid(int mult) {
-    if (som.dimension != 2)
+    if (dimension != 2)
         throw "initGrid is possible only for 2D SOM";
     
     for (unsigned i = 0; i < sx; i++)
@@ -93,33 +91,41 @@ void cSom::initRandom(unsigned maxn) {
 
 vector<int> cSom::getNeighbors(unsigned n) {
     vector<int> retVec;
-    if (n >= sx)
+    
+    // get the neighbor (if it is there)
+    if (n >= sx)  // look up
         retVec.push_back(n - sx);
-    if (n < sx * sy - sx)
+    if (n < sx * sy - sx)  // look down
         retVec.push_back(n + sx);
-    if ((n + 1) % sx > 0)
-        retVec.push_back(n + 1);
-    if (n % sx > 0)
+    if ((n + 1) % sx > 0)  // look right
+        retVec.push_back(n + 1); 
+    if (n % sx > 0) // look left
         retVec.push_back(n - 1);
         
     return retVec;
 }
 
 void cSom::adjustWeights(int idx, vector<int> v) {
+    // winning neuron multiplies the adjustment by learning coefficient
     som[idx].addVec(v, learnCoeff);
+    
+    //neighboring neurons also by neighboring coefficient
     for(int i: getNeighbors(idx)) {
         som[i].addVec(v, learnCoeff * nbrCoeff);
     }
 }
 
 void cSom::learn(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
-    cout << "learning started" << endl;
+    cout << "PROGRESS: learning started" << endl;
     int cntr = 0;
     endIdx = endIdx > 0 ? endIdx : data.size();
         
+    // get bmu -> adjust weights -> repeat
     for (int i = startIdx; i < endIdx; i++) {
+        
+        // primitive progress info
         if (cntr == 1000) {
-            cout << "parsed " << i << " items out of " << endIdx << endl;
+            cout << "PROGRESS: learning: " << i << " items out of " << endIdx << endl;
             cntr = 0;
         }
         cntr++;
@@ -129,15 +135,16 @@ void cSom::learn(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
         som[bmu].hit(ref[i]);
         adjustWeights(bmu, data[i]);
     }
-    cout << "learning finished" << endl;
+    cout << "PROGRESS: learning finished" << endl;
 }
 
 void cSom::classify(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
-    cout << "classification started" << endl;
+    cout << "PROGRESS: classification started" << endl;
     int correct = 0, wrong = 0;
     
     endIdx = endIdx > 0 ? endIdx : data.size();
     
+    // get bmu -> compare with reference -> repeat
     for (int i = startIdx; i < endIdx; i++) {
         int bmu = getBmu(data[i]);
         if (som[bmu].topHit() == ref[i]) {
@@ -147,9 +154,13 @@ void cSom::classify(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
         }
     }
     
-    cout << "classification ended" << endl;
-    cout << "correctly classified: " << correct << " items out of " << correct + wrong << endl;
-    cout << "wrongly classified: " << wrong << " items out of " << correct + wrong << endl;
+    cout << "PROGRESS: classification ended" << endl;
+    
+    cout << "\ncorrectly classified: " << correct << " items out of " << correct + wrong;
+    cout << " (" << correct * 100 / double(correct + wrong) << "%)" << endl;
+    cout << "wrongly classified: " << wrong << " items out of " << correct + wrong;
+    cout << " (" << wrong * 100 / double (correct + wrong) << "%)" << endl;
+    
 }
     
 void cSom::print() {
