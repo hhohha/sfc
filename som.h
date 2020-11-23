@@ -2,6 +2,8 @@
 
 using namespace std;
 
+typedef vector<vector<int>> intMatrix;
+
 class cNeuron {
 public:
     vector<int> w;
@@ -28,9 +30,9 @@ public:
     void initRandom(unsigned maxn);
     vector<int> getNeighbors(unsigned n);
     void adjustWeights(int idx, vector<int> input);
-    void learn(vector<vector<int>> input, vector<int> ref, int startIdx = 0, int endIdx = -1);
-    void classify(vector<vector<int>> input, vector<int> ref, int startIdx = 0, int endIdx = -1);
-    void print(vector<int> input);
+    void learn(intMatrix input, vector<int> ref, int startIdx = 0, int endIdx = -1);
+    void classify(intMatrix input, vector<int> ref, int startIdx = 0, int endIdx = -1);
+    void print();
     int getBmu(vector<int> vec);
     cNeuron getNeuron(unsigned x, unsigned y);
 };

@@ -10,40 +10,39 @@
 
 using namespace std;
 
-typedef vector<vector<int>> vector2d;
+int sleep_time = 0;
 
-vector2d generateInput(int n){
-    vector2d v;
+intMatrix generateInput(int n, int gridSize){
+    intMatrix v;
     
     for (int i = 0; i < n; i++) {
-        v.push_back(vector<int>{rand() % 500, rand() % 500});
+        v.push_back(vector<int>{rand() % ((gridSize - 1) * 100) , rand() % ((gridSize - 1) * 100)});
     }
     
     return v;
 }
 
-vector2d generateClusteredInput(int n, int clusterCnt){
-    vector2d v;
+intMatrix generateClusteredInput(int n, int gridSize, int clusterCnt, int clusterSize){
+    intMatrix v;
     vector<int> clusters;
     
     for (int i = 0; i < clusterCnt; i++) {
-        clusters.push_back(rand() % 800);
-        clusters.push_back(rand() % 800);
+        clusters.push_back(rand() % ((gridSize - 1) * 100 - clusterSize));
+        clusters.push_back(rand() % ((gridSize - 1) * 100 - clusterSize));
     }
-    
     
     for (int i = 0; i < n; i++) {
         int r = rand() % clusterCnt;
         int offsetX = clusters[r*2];
         int offsetY = clusters[r*2+1];
 
-        v.push_back(vector<int>{rand() % 200 + offsetX, rand() % 200 + offsetY});
+        v.push_back(vector<int>{rand() % clusterSize + offsetX, rand() % clusterSize + offsetY});
     }
-    
+
     return v;
 }
 
-void readCSV(string filename, vector<vector<int>> &data, vector<int> &reference) {
+void readCSV(string filename, intMatrix &data, vector<int> &reference) {
     ifstream fin(filename);
     
     if (!fin){
@@ -85,64 +84,84 @@ void readCSV(string filename, vector<vector<int>> &data, vector<int> &reference)
 
 void usage() {
     cerr << "usage:" << endl;
-    cerr << "som_demo visual -i INPUT_CNT" << endl;
-    cerr << "som_demo clusters -c CLUSTER_CNT -i INPUT_CNT [-nd]" << endl;
-    cerr << "som_demo digits -f FILENAME"  << endl;
+    cerr << "som_demo visual -i INPUT_CNT -s GRID_SIZE [-sp SPEED]" << endl;
+    cerr << "som_demo clusters -i INPUT_CNT -s GRID_SIZE [-c CLUSTER_CNT] [-cs CLUSTER_SIZE] [-sp SPEED] [-nd]" << endl;
+    cerr << "som_demo digits -f FILENAME -s GRID_SIZE [-p CLASSIFY_PERCENT]"  << endl;
     exit(1);
 }
 
-void demo_visual(int inputCnt) {
-    int size = 6;
+int toInt(string s) {
+    int n = 0;
+
+    for(auto c: s) {
+        if (c >= '0' && c <= 9) {
+            n *= 10;
+            n += c - 48;
+        } else {
+            usage();
+        }
+    }
     
-    vector2d testInput = generateInput(inputCnt);
-    cSom mySom = cSom(size, size, 2);
+    return n;
+}
+
+void demo_visual(int inputCnt, int gridSize) {
+    
+    intMatrix testInput = generateInput(inputCnt, gridSize);
+    cSom mySom = cSom(gridSize, gridSize, 2);
     mySom.initGrid();
     
-    mySom.print({-1, -1});
+    cout << "s" << mySom.sx << endl;
+    mySom.print();
     for (unsigned i = 0; i < testInput.size(); i++) {
         int bmu = mySom.getBmu(testInput[i]);
          mySom.adjustWeights(bmu, testInput[i]);
-         mySom.print(testInput[i]);
-         usleep(1000000);
-         
+         mySom.print();
+         cout << "i" << testInput[i][0] << " " << testInput[i][1] << endl;
+         usleep(sleep_time);
     }
-    cout << "0x0";
+    cout << "e" << endl;
 }
 
-void demo_clusters(int inputCnt, int clusterCnt, bool displayProgress) {
-    int size = 10;
-    vector2d testInput = generateClusteredInput(inputCnt, clusterCnt);
-    cSom mySom = cSom(size, size, 2);
+void demo_clusters(int inputCnt, int gridSize, int clusterCnt, int clusterSize, bool displayProgress) {
+    intMatrix testInput = generateClusteredInput(inputCnt, gridSize, clusterCnt, clusterSize);
+    cSom mySom = cSom(gridSize, gridSize, 2);
     mySom.initGrid();
     
-    mySom.print({-1, -1});
+    cout << "s" << mySom.sx << endl;
+    mySom.print();
     
     for (unsigned i = 0; i < testInput.size(); i++) {
         int bmu = mySom.getBmu(testInput[i]);
          mySom.adjustWeights(bmu, testInput[i]);
          
          if (displayProgress) {
-            mySom.print(testInput[i]);
-            usleep(100000);
+            mySom.print();
+            usleep(sleep_time);
          }
+         cout << "i" << testInput[i][0] << " " << testInput[i][1] << endl;
     }
-    mySom.print({-1, -1});
-    cout << "0x0";
+    
+    if (!displayProgress) {
+        mySom.print();
+    }
+    cout << "e";
 }
 
-void demo_digits(string filename) {
+void demo_digits(string filename, int gridSize, int classifyPercent) {
     vector<int> reference;
-    vector<vector<int>> data;
+    intMatrix data;
     
     readCSV(filename, data, reference);
+    int classifyCnt = data.size() / 100 * classifyPercent;
     
-    cSom mySom = cSom(15, 15, 784);
+    cSom mySom = cSom(gridSize, gridSize, 784);
     cout << "cSom created" << endl;
-    mySom.initRandom(256);
+    mySom.initRandom(30);
     cout << "cSom initialized" << endl;
     
-    mySom.learn(data, reference, 0, data.size() - 1000);
-    mySom.classify(data, reference, data.size() - 1000, data.size());
+    mySom.learn(data, reference, 0, data.size() - classifyCnt);
+    mySom.classify(data, reference, data.size() - classifyCnt, data.size());
     
     for (unsigned i = 0; i < mySom.sx; i++) { 
         for (unsigned j = 0; j < mySom.sy; j++) { 
@@ -159,48 +178,94 @@ int main (int argc, char **argv) {
 
     bool displayProgress = true;
     int inputCnt = -1;
-    int clusterCnt = -1;
+    int clusterCnt = 3;
+    int gridSize = -1;
+    int clusterSize = 100;
     string filename = "";
+    int classifyPercent = 5;
+    int speed = 5;
     
      srand((unsigned) time(0));
     
-    //add try/catch block for stoi
-    try {
-        for (int i = 2; i < argc; i++) {
-            string arg(argv[i]);
+    
+    for (int i = 2; i < argc; i++) {
+        string arg(argv[i]);
+        
+        if (arg == "-i" && i < argc - 1)
+            inputCnt = toInt(argv[++i]);
+        else if (arg == "-s" && i < argc - 1)
+            gridSize = toInt(argv[++i]);
+        else if (arg == "-cs" && i < argc - 1)
+            clusterSize = toInt(argv[++i]);
+        else if (arg == "-c" && i < argc - 1)
+            clusterCnt = toInt(argv[++i]);
+        else if (arg == "-nd")
+            displayProgress = false;
+        else if (arg == "-f" && i < argc - 1)
+            filename = argv[++i];
+        else if (arg == "-p" && i < argc - 1)
+            classifyPercent = toInt(argv[++i]);
+        else if (arg == "-sp" && i < argc - 1)
+            speed = toInt(argv[++i]);
+        else 
+            usage();
+    }
             
-            if (arg == "-i" && i < argc - 1) {
-                i++;
-                inputCnt = stoi(argv[i]);
-            } else if (arg == "-c" && i < argc - 1) {
-                i++;
-                clusterCnt = stoi(argv[i]);
-            } else if (arg == "-nd") {
-                displayProgress = false;
-            } else if (arg == "-f" && i < argc - 1) {
-                i++;
-                filename = argv[i];
-            } else {
-                usage();
-            }
-        } 
-    } catch (invalid_argument e) {
-        usage();
+        
+    if (speed < 1 || speed > 5){
+        cerr << "speed must be between 1 and 5" << endl;
+        return 1;
+    } else {
+        if (speed == 5)
+            sleep_time = 0;
+        else if (speed == 4)
+            sleep_time = 100000;
+        else if (speed == 3)
+            sleep_time = 300000;
+        else if (speed == 2)
+            sleep_time = 1000000;
+        else if (speed == 1)
+            sleep_time = 5000000;
     }
         
-    
     if (string(argv[1]) == "visual") {
-        if (inputCnt < 1)
+        if (inputCnt < 1 || gridSize < 1)
             usage();
-        demo_visual(inputCnt);
+        if (gridSize < 3 || gridSize > 20) {
+            cerr << "grid size must be between 3 and 20" << endl;
+            return 1;
+        }
+        
+        demo_visual(inputCnt, gridSize);
     } else if (string(argv[1]) == "clusters") {
-        if (inputCnt < 1 || clusterCnt < 1)
+        if (inputCnt < 1 || gridSize < 1)
             usage();
-        demo_clusters(inputCnt, clusterCnt, displayProgress);
+        
+        if (gridSize < 3 || gridSize > 20) {
+            cerr << "grid size must be between 3 and 20" << endl;
+            return 1;
+        }
+        if (clusterSize < 10 || clusterSize > gridSize * 50) {
+            cerr << "cluster size must be between 10 and gridSize * 50 (" << gridSize * 50 << ")" << endl;
+            return 1;
+        }
+        
+        demo_clusters(inputCnt, gridSize, clusterCnt, clusterSize, displayProgress);
     } else if (string(argv[1]) == "digits") {
         if (filename == "")
             usage();
-        demo_digits(filename);
+        
+        if (classifyPercent < 1 || classifyPercent > 50) {
+            cerr << "classification percentage must be between 1 and 50" << endl;
+            return 1;
+        }
+        
+        if (gridSize < 5 || gridSize > 25) {
+            cerr << "net size for digit classification must be between 5 and 25" << endl;
+            return 1;
+        }
+        
+        demo_digits(filename, gridSize, classifyPercent);
     } else {
         usage();
     }

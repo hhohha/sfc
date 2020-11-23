@@ -2,8 +2,10 @@
 
 /*
  TODO
+  - vykreslovani
   - tidy up the code, comments
   - write report
+  - play with learning coeffs for digots
  */
 
 
@@ -12,7 +14,6 @@
 #include <unistd.h>
 
 using namespace std;
-
     
 cNeuron::cNeuron(int size) {
     w.resize(size);
@@ -74,6 +75,9 @@ cSom::cSom(unsigned sx, unsigned sy, unsigned dimension) {
 }
 
 void cSom::initGrid(int mult) {
+    if (som.dimension != 2)
+        throw "initGrid is possible only for 2D SOM";
+    
     for (unsigned i = 0; i < sx; i++)
         for (unsigned j = 0; j < sy; j++) {
             som[i * sx + j].w[0] = i * mult;
@@ -108,7 +112,7 @@ void cSom::adjustWeights(int idx, vector<int> v) {
     }
 }
 
-void cSom::learn(vector<vector<int>> data, vector<int> ref, int startIdx, int endIdx) {
+void cSom::learn(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
     cout << "learning started" << endl;
     int cntr = 0;
     endIdx = endIdx > 0 ? endIdx : data.size();
@@ -128,7 +132,7 @@ void cSom::learn(vector<vector<int>> data, vector<int> ref, int startIdx, int en
     cout << "learning finished" << endl;
 }
 
-void cSom::classify(vector<vector<int>> data, vector<int> ref, int startIdx, int endIdx) {
+void cSom::classify(intMatrix data, vector<int> ref, int startIdx, int endIdx) {
     cout << "classification started" << endl;
     int correct = 0, wrong = 0;
     
@@ -148,9 +152,7 @@ void cSom::classify(vector<vector<int>> data, vector<int> ref, int startIdx, int
     cout << "wrongly classified: " << wrong << " items out of " << correct + wrong << endl;
 }
     
-void cSom::print(vector<int> data) {
-    cout << sx << "x" << sy << endl;
-    cout << data[0] << " " << data[1] << endl;
+void cSom::print() {
     for (unsigned i = 0; i < som.size(); i++) {
         for (auto n: som[i].w) {
             cout << n << " ";

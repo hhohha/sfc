@@ -6,12 +6,21 @@ import time, sys
 win = None
 draw_objs = []
 
-def init_draw(x=600, y=600):
+def init_draw(x, y):
     global win
     win = GraphWin('', x, y)
 
 
-def draw_2d_map(m, x, vec):
+
+def draw_input(x, y):
+    global win
+    
+    c = Circle(Point(x+25, y+25), 2)
+    c.setOutline('red')
+    c.setFill('red')
+    c.draw(win)
+    
+def draw_net(m, x):
     global draw_objs
     global win
 
@@ -35,48 +44,37 @@ def draw_2d_map(m, x, vec):
             draw_objs.append(l)
             l.draw(win)
 
-    for v in vec:
-        c = Circle(Point(v[0], v[1]), 2)
-        c.setOutline('red')
-        c.setFill('red')
-        draw_objs.append(c)
-        c.draw(win)
-
-
 def finish_draw():
     win.getMouse()
     win.close()
-    
-gridSize = int(sys.argv[1])
 
 def readNextLine():
     line = sys.stdin.readline()
     while not line:
-        time.sleep(0.1)
         line = sys.stdin.readline()
         
     return line
 
-init_draw(gridSize * 100 - 50, gridSize * 100 - 50)
-input_vec = []
+sx, sy = 0, 0
+m = []
 
 while True:
     line = readNextLine()
-    sx, sy = map(lambda x: int(x), line.split('x'))
-    m = []
     
-    if sx == 0 and sy == 0:
+    if line[0] == 's':
+        sx = sy = int(line[1:])
+        init_draw(sx * 100 - 50, sy * 100 - 50)
+    elif line[0] == 'i':
+        c1, c2 = map(lambda x: int(x), line[1:].split())
+        draw_input(c1, c2)
+    elif line[0] == 'e':
         break
-    
-    line = readNextLine()
-    c1, c2 = map(lambda x: int(x), line.split())
-    input_vec.append([c1, c2])
-    
-    for i in range(sx * sy):
-        line = readNextLine()
+    else:
         c1, c2 = map(lambda x: int(x), line.strip().split())
-        m.append([c1, c2])
+        m.append([c1+25, c2+25])
         
-    draw_2d_map(m, gridSize, input_vec)
+    if len(m) == sx * sy:
+        draw_net(m, sx)
+        m = []
  
 finish_draw()
