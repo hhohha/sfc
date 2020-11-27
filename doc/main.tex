@@ -1,0 +1,151 @@
+
+\documentclass[12pt]{article}
+
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+\title{Demonstrace SOM sítí} % Title of the assignment
+
+\author{Jan Hammer\\ \texttt{xhamme00@stud.fit.vutbr.cz}} % Author name and email address
+
+\date{FIT VUT --- \today} % University, school and/or department name(s) and a date
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section*{Dema}
+
+Účelem projektu je demonstrace sítě SOM. K tomuto účelu slouží program \textit{som\_demo}, ten lze spustit v jednom ze tří módů, z niž každý demonstruje nějaký aspekt SOM sítí.
+
+\begin{itemize}
+	\item \textit{visual} -- Zobrazí v rovině dvourozměrnou síť, postupně jsou do této sítě náhodně generovány body a síť se podle nich mění (učí). Mód je určen k detailnímu pozorování, jak jednotlivé body sítě reagují na vstupní data. Při nízké rychlosti generování vstupů je možné pozorovat, že každý vstup ovlivní nejbližší neuron a jeho (dva až čtyři) sousedy. Tyto neurony se v rovině přiblíží vstupnímu bodu.
+	\item \textit{clusters} -- Podobně síť podobně jako mód visual, negeneruje ovšem data rovnoměrně do celé sítě, nýbrž do skupin (clusterů). Je určen k pozorování postupného přizpůsobení tvaru sítě. Je vhodné zvýšit rychlost generování vstupů a jejich počet, aby bylo možné pozorovat, jak síť mění svůj tvar -- neurony jsou vtahovány do shluku bodů.
+	\item \textit{digits} -- Demonstruje praktické použití SOM pro detekci číslic v obraze. Vyžaduje soubor s trénovacími daty (viz prerekvizity). Tato data jsou rozdělena na dvě části, na první probíhá trénování sítě, na druhé pak klasifikace. Na konci běhu zobrazí statistiky úspěšnosti klasifikace a výslednou mapu neuronů, kde každý neuron je zobrazován jako číslice, kterou reprezentuje (příp. hodnotu -1 pokud neuron nezvítězil ani při jednom vstupu).
+\end{itemize}
+
+
+\section*{Implementace}
+Soubory \textit{som.h/som.cpp} popisují dvě třídy: \textit{cSom} a \textit{cNeuron}. Třída \textit{cSom} obsahuje vektor objektů třídy \textit{cNeuron}. Sousedství je definováno metodou \textit{getNeighbors}. V současné verzi je uvažována dvourozměrná síť, kde každý vnitřní neuron má čtyři sousedy. Jednoduchým rozšířením metody \textit{getNeighbors} by bylo možné docílit širšího sousedství neuronů (přes jednoho, před dva atd.) nebo i jiného rozměru sousedství. Počáteční hodnoty neuronů je možné nastavit náhodně nebo do mřížky (u 2D sítí). Síť je schopna pro daný vstupní vektor najít neuron, který je mu nejvíce podobný - pro tento účel slouží metoda \textit{getBmu}, přičemž nejvíce podobný znamená, že suma čtverce rozdílů jednotlivých hodnot vektoru a tohoto neuronu je v síti nejnižší. Vstupní vektor musí mít stejnou dimenzi jako neurony. Po vyhledání vítězného neuronu při učení sítě následuje úprava jeho hodnot a hodnot jeho sousedů. K tomu slouží metoda \textit{adjustWeights}, která k vektoru těchto neuronů přičte rozdíl vstupního vektoru a vektoru daného neuronu, který vynásobí příslušnými koeficienty učení. Dále třída obsahuje metody \textit{learn} a \textit{classify}, které pro všechny vstupní vektory vyhledají vítězný neuron, metoda \textit{learn} následně upraví váhy, kdežto metoda \textit{classify} pouze porovná hodnotu vítězného neuronu s očekávanou.
+
+Soubor \textit{som\_demo.cpp} je zamýšlen jako ukázka použití třídy \textit{cSom}. Obsahuje tři hlavní funkce -- \textit{demo\_visual}, \textit{demo\_clusters}, \textit{demo\_digits} (viz sekce Dema). Dále obsahuje funkce pro získání vstupních hodnot. Pro módy \textit{visual} a \textit{clusters} jsou generovány vstupy náhodně. V módu \textit{visual} se vstupy generují funkcí \textit{generateInput}, a to rovnoměrně na celé ploše sítě. V módu \textit{clusters} se používá funkce \textit{generateClusteredInput}, ta nejprve vygeneruje na ploše sítě shluky dle zadaného počtu a velikosti. V nich pak dále náhodně generuje vstupní body -- do náhodného shluku na náhodné místo. Mód \textit{digits} načítá data ze vstupního CSV souboru funkcí \textit{readCSV}.
+
+Soubor \textit{display.py} je skript sloužící pro vizualizaci módů \textit{visual} a \textit{clusters}. Načítá data, která vypisuje na standardní výstup program \textit{demo\_som} a zobrazuje síť jako mřížku a vstupní body jako červené tečky. Používá open source knihovnu \textit{graphics.py}.
+
+\section*{Prerekvizity}
+Pro vizualizaci módů \textit{visual} a \textit{clusters} je potřeba knihovna \textit{graphics.py} dostupná zde:
+
+\begin{verbatim}
+	https://mcsp.wartburg.edu/zelle/python/graphics.py
+\end{verbatim}
+
+\noindent
+Pro mód \textit{digits} jsou potřeba vstupní data pro učení rozpoznávání číslic dostupná (po registraci) zde:
+
+\begin{verbatim}
+	https://www.kaggle.com/c/digit-recognizer/data?select=train.csv
+\end{verbatim}
+
+\section*{Ovládání}
+Překlad se provede příkazam \textit{make}.
+
+Spuštění dema je možné provést přes skript \textit{run\_demo.sh} nebo manuálně. Skript \textit{run\_demo} má jako svůj jediný parametr číslo dema 1--4, které se má provést. Tedy např. 
+
+\begin{commandline}
+	\begin{verbatim}
+		./run_demo.sh 3
+	\end{verbatim}
+\end{commandline}
+
+\newpage
+
+Přímé spuštění programu \textit{som\_demo} bez parametrů zobrazí následující použití programu:
+
+\begin{commandline}
+	\begin{verbatim}
+		usage:
+		som_demo visual -i INPUT_CNT -s GRID_SIZE [-sp SPEED]
+		som_demo clusters -i INPUT_CNT -s GRID_SIZE [-c CLUSTER_CNT] 
+		[-cs CLUSTER_SIZE] [-sp SPEED] [-nd]
+		som_demo digits -f FILENAME -s GRID_SIZE [-p CLASSIFY_PERCENT]
+	\end{verbatim}
+\end{commandline}
+
+Význam parametrů je následující:
+
+\begin{itemize}
+	\item spuštění programu \textit{som\_demo} vyžaduje jako první parametr specifikaci jeden ze tří módů (\textit{visual, clusters, digits})
+	\item parametr \textbf{-i} specifikuje počet náhodně generovaných vstupů (relevantní pro módy \textit{visual} a \textit{clusters})
+	\item parametr \textbf{-c} specifikuje počet shluků (relevantní pro mód clusters), implicitně jsou tři
+	\item parametr \textbf{-nd} způsobí, že nebude zobrazována vizualizace průběhu učení sítě, ale jen výsledná podoba (relevantní pro mód \textit{clusters}), to je vhodné pokud je vstupních bodů řádově tisíce a více, protože vizualizace při každém kroku by trvala dlouho
+	\item parametr \textbf{-f} specifikuje jméno vstupního CSV souboru pro mód \textit{digits}
+	\item parametr \textbf{-s} určuje velikost sítě, ta je vždy čtvercová, tedy např. \textbf{-s} 10 znamená síť o velikost $10\times10$ neuronů
+	\item parametr \textbf{-sp} určuje rychlost generování vstupů, je určena pro zpomalení vizualizace, maximální rychlost je 5, minimální 1 (při rychlosti 1 je mezi vstupy časový odstup 5 sekund), implicitní rychlost je 5
+	\item parametr \textbf{-cs} specifikuje velikost shluků pro mód \textit{clusters}, implicitně je velikost 100 (vzdálenost mezi sousedními neurony v mřížce je na začátku běhu 100)
+	\item parametr \textbf{-p} specifikuje procento dat pro mód \textit{digits}, které budou použity pro klasifikaci (a tedy nebudou použity pro učení), implicitní hodnota je 5
+\end{itemize}
+
+Výstup módů \textit{visual} a \textit{clusters} je vhodné použít jako vstup do skriptu \textit{display.py}.
+
+Příklady spuštění:
+\begin{commandline}
+	\begin{verbatim}
+	./som_demo visual -i 10 -s 6 -sp 2 | ./display.py
+	./som_demo clusters -i 200 -c 3 -s 10 -cs 200 | ./display.py
+	./som_demo clusters -i 5000 -c 5 -nd -s 10 -cs 300 | ./display.py 
+	./som_demo digits -f train.csv -p 2 -s 12
+	\end{verbatim}
+\end{commandline}
+
+\section*{Soubory}
+Jádro projektu byl napsán v jazyce C++. Projekt se skládá z následujících částí. Soubory som.cpp a som.h je možno považovat za obecnou jednoduchou knihovnu pro práci se SOM sítěmi.
+
+\begin{itemize}
+    \item \textit{som\_demo.cpp} -- určen pro demonstraci práce s SOM sítí.
+    \item \textit{som.cpp, som.h} -- fungují jako jednoduchá knihovna pro práci se SOM sítěmi.
+    \item \textit{display.py} -- skript, určen pro vizualizaci dvourozměrných sítí.
+    \item \textit{run\_demo.sh} -- skript, určen k demonstraci spouštění projektu.
+    \item \textit{Makefile} -- standardní soubor s definicí závislostí pro překlad kompilátorem C++ 
+    \item \textit{graphics.py} -- open source knihovna pro jednoduchou práci s grafikou v jazyce Python
+\end{itemize}
+	
+\section*{Testování úspěšnosti rozpoznávání číslic}
+
+Trénovací data v CSV souboru \textit{train.csv} (viz prerekvizity) obsahují 42 000 číslic. V prvním sloupci je hodnota dané číslice, v následujících 784 sloupcích hodnota barvy pixelu (0--255). Jedná se tedy o obrázek $28\times28$ pixelů. Aby test klasifikování číslic byl statisticky průkazný, v následujících pokusech jsou klasifikována poslední 2\% dat, tedy 840 číslic. 41 160 je tedy použito na trénování sítě. V následující tabulce jsou výsledky rozpoznávání v závislosti na velikosti sítě. Pro každou velikost byl test spuštěn 7 krát, byl odstraněn nejvyšší a nejnižší výsledek a ze zbylých vzat průměr.
+
+\
+
+\begin{center}
+	\begin{tabular}{||c c c c c||} 
+		\hline
+		Velikost sítě & Čas(sec) & Správně klas. (z 840) & Nesprávně klas. (z 840) & Úspěšnost (\%) \\ [0.5ex] 
+		\hline
+		$6\times6$ & 5.6 & 418 & 422 & 49.74 \\ 
+		\hline
+		$8\times8$ & 9.4 & 486 & 354 & 57.86 \\
+		\hline
+		$10\times10$ & 14.0 & 556 & 284 & 66.17  \\
+		\hline
+		$12\times12$ & 19.9 & 570 & 270 & 67.83 \\
+		\hline
+		$14\times14$ & 26.8 & 606 & 234 & 72.14 \\
+		\hline
+		$16\times16$ & 34.5 & 613 & 227 & 72.98 \\
+		\hline
+		$18\times18$ & 43.6 & 633 & 207 & 75.33 \\
+		\hline
+		$20\times20$ & 53.6 & 629 & 211 & 74.93 \\
+		\hline
+		$22\times22$ & 64.7 & 651 & 189 & 77.48 \\
+		\hline
+		$24\times24$ & 78.2 & 640 & 200 & 76.21 \\
+		\hline
+		$26\times26$ & 92.3 & 657 & 183 & 78.26 \\
+		\hline
+		$28\times28$ & 104.5 & 657 & 183 & 78.26 \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\end{document}

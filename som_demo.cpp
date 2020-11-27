@@ -287,8 +287,8 @@ int main (int argc, char **argv) {
             return 1;
         }
         
-        if (gridSize < 5 || gridSize > 25) {
-            cerr << "net size for digit classification must be between 5 and 25" << endl;
+        if (gridSize < 5 || gridSize > 30) {
+            cerr << "net size for digit classification must be between 5 and 30" << endl;
             return 1;
         }
         
