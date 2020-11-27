@@ -4,7 +4,7 @@
 # author: Jan Hammer, xhamme00
 
 if [ $# != 1 ]; then
-    echo "usage: ./run_demo 1|2|3|4"
+    echo "usage: ./run_demo.sh 1|2|3|4"
 elif [ $1 = "1" ]; then
     stat display.py graphics.py > /dev/null || {
         echo "files display.py and graphics.py must be present for this demo to work"

@@ -58,14 +58,14 @@ Soubor \textit{som\_demo.cpp} je zamýšlen jako ukázka použití třídy \text
 Soubor \textit{display.py} je skript sloužící pro vizualizaci módů \textit{visual} a \textit{clusters}. Načítá data, která vypisuje na standardní výstup program \textit{demo\_som} a zobrazuje síť jako mřížku a vstupní body jako červené tečky. Používá open source knihovnu \textit{graphics.py}.
 
 \section*{Prerekvizity}
-Pro vizualizaci módů \textit{visual} a \textit{clusters} je potřeba knihovna \textit{graphics.py} dostupná zde:
+Pro vizualizaci módů \textit{visual} a \textit{clusters} je přiložena knihovna \textit{graphics.py} dostupná zde:
 
 \begin{verbatim}
 	https://mcsp.wartburg.edu/zelle/python/graphics.py
 \end{verbatim}
 
 \noindent
-Pro mód \textit{digits} jsou potřeba vstupní data pro učení rozpoznávání číslic dostupná (po registraci) zde:
+Pro mód \textit{digits} jsou potřeba vstupní data pro učení rozpoznávání číslic. Pro zachování potřebné velikosti projektu je přiložena jejich část -- 6000 vstupů z celkových 42000. S nimi je možné vyzkoušet funkčnost programu, ale nelze dosáhnout výsledků prezentovaných níže. Kompletní data jsou dostupná (po registraci) zde:
 
 \begin{verbatim}
 	https://www.kaggle.com/c/digit-recognizer/data?select=train.csv
@@ -78,8 +78,9 @@ Překlad se provede příkazam \textit{make}.
 \noindent
 Odstranění všech vygenerovaných souborů se provede příkazem \textit{make clean}.
 \vspace{5pt}
+\newpage
 
-Spuštění dema je možné provést přes skript \textit{run\_demo.sh} nebo manuálně. Skript \textit{run\_demo} má jako svůj jediný parametr číslo dema 1--4, které se má provést. Tedy např. 
+Spuštění dema je možné provést přes skript \textit{run\_demo.sh} nebo manuálně. Skript \textit{run\_demo} má jako svůj jediný parametr číslo dema 1--4, které se má provést. Tedy např.:
 
 \begin{commandline}
 	\begin{verbatim}
@@ -113,7 +114,15 @@ Význam parametrů je následující:
 	\item parametr \textbf{-p} specifikuje procento dat pro mód \textit{digits}, které bude použito pro klasifikaci (a tedy nebude použito pro učení), implicitní hodnota je 5
 \end{itemize}
 
-Výstup módů \textit{visual} a \textit{clusters} je vhodné použít jako vstup do skriptu \textit{display.py}.
+\subsection*{Výstup vizualizace}
+Výstup módů \textit{visual} a \textit{clusters} je vhodné použít jako vstup do skriptu \textit{display.py}, není primárně určen pro přímé čtení. Každý řádek obsahuje nějakou z následujících hodnot:
+
+\begin{itemize}
+	\item \textbf{sN} -- velikost strany čtvercové sítě je N (první údaj na výstupu, neměl by být v průběhu měněn)
+	\item \textbf{iN M} -- vstupní hodnota na souřadnicích N M
+	\item \textbf{e} -- konec vstupu (poslední údaj)
+	\item \textbf{N M} -- následující neuron je na souřadnicích N M
+\end{itemize}
 
 Příklady spuštění:
 \begin{commandline}
@@ -135,11 +144,12 @@ Jádro projektu bylo napsáno v jazyce C++. Projekt se skládá z následující
     \item \textit{run\_demo.sh} -- skript, určen k demonstraci spouštění projektu
     \item \textit{Makefile} -- standardní soubor s definicí závislostí pro překlad kompilátorem C++ 
     \item \textit{graphics.py} -- open source knihovna pro jednoduchou práci s grafikou v jazyce Python
+    \item \textit{train.csv} -- soubor s CSV daty pro trénování rozpoznání číslic, k projektu je přiložena pouze část původních dat o 6000 vstupních hodnotách, aby byla dodržena velikost projektu. Původní data mají 42000 hodnot a bez nich není možné dosáhnout výsledků níže
 \end{itemize}
 	
 \section*{Testování úspěšnosti rozpoznávání číslic}
 
-Trénovací data v CSV souboru \textit{train.csv} (viz prerekvizity) obsahují 42 000 číslic. V prvním sloupci je hodnota dané číslice, v následujících 784 sloupcích hodnota barvy pixelu (0--255). Jedná se tedy o obrázek $28\times28$ pixelů. Aby test klasifikování číslic byl statisticky průkazný, v následujících pokusech jsou klasifikována poslední 2\% dat, tedy 840 číslic. 41 160 je tedy použito na trénování sítě. V následující tabulce jsou výsledky rozpoznávání v závislosti na velikosti sítě. Pro každou velikost byl test spuštěn 7 krát, byl odstraněn nejvyšší a nejnižší výsledek a ze zbylých vzat průměr.
+Trénovací data v CSV souboru \textit{train.csv} (viz prerekvizity) obsahují 42000 číslic. V prvním sloupci je hodnota dané číslice, v následujících 784 sloupcích hodnota barvy pixelu (0--255). Jedná se tedy o obrázek $28\times28$ pixelů. Aby test klasifikování číslic byl statisticky průkazný, v následujících pokusech jsou klasifikována poslední 2\% dat, tedy 840 číslic. 41 160 je tedy použito na trénování sítě. V následující tabulce jsou výsledky rozpoznávání v závislosti na velikosti sítě. Pro každou velikost byl test spuštěn 7 krát, byl odstraněn nejvyšší a nejnižší výsledek a ze zbylých vzat průměr.
 
 \begin{center}
 	\begin{tabular}{|c c c c c|} 
